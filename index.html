@@ -330,7 +330,7 @@
         // --- VARIÁVEIS DE JOGO ---
         let currentStageIndex = 0; let currentOpponent = null; let poolTeams = []; let brazilGoals = 0; let opponentGoals = 0; let currentKick = 1; let turn = 'player_shoot';
         let isAnimating = false; let gameActive = false; let isChampionCelebration = false;
-        let animFrameId = null; // Evita loop duplo
+        let animFrameId = null;
 
         const scoreDisplay = document.getElementById('match-score');
         const turnDisplay = document.getElementById('score-turn');
@@ -341,7 +341,7 @@
         const messageBanner = document.getElementById('message-banner');
 
         const goalBox = { x: 70, y: 55, width: 280, height: 140 }; 
-        const keeperY = 85; // Alinhado perfeitamente com a altura onde a bola chega na linha do gol
+        const keeperY = 85; 
         let keeperX = 210; let keeperDir = 1; let brazilKeeperX = 210;
         let ballPos = { x: 210, y: 350 }; let aquilesPos = { x: 210, y: 390 }; let isKicking = false;
         let ballStart = { x: 210, y: 350 }; let ballTarget = { x: 210, y: 70 }; let ballAnimProgress = 0;
@@ -462,7 +462,7 @@
             ctx.fillStyle = '#27ae60'; for (let i = 0; i < canvas.height; i += 48) if ((i / 48) % 2 === 0) ctx.fillRect(0, i, canvas.width, 24); 
             ctx.strokeStyle = '#dcdde1'; ctx.lineWidth = 3; ctx.strokeRect(goalBox.x, goalBox.y, goalBox.width, goalBox.height); 
             ctx.strokeRect(goalBox.x + 100, goalBox.y, 80, 40); ctx.beginPath(); ctx.arc(210, goalBox.y + goalBox.height, 40, 0, Math.PI); ctx.stroke(); 
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)p'; ctx.lineWidth = 1; 
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)'; ctx.lineWidth = 1; 
             for (let x = goalBox.x + 20; x < goalBox.x + goalBox.width; x += 20) { ctx.beginPath(); ctx.moveTo(x, goalBox.y); ctx.lineTo(x, goalBox.y + goalBox.height); ctx.stroke(); } 
             for (let y = goalBox.y + 20; y < goalBox.y + goalBox.height; y += 20) { ctx.beginPath(); ctx.moveTo(goalBox.x, y); ctx.lineTo(goalBox.x + goalBox.width, y); ctx.stroke(); } 
             
@@ -520,18 +520,16 @@
             ctx.fillStyle = '#f1c40f'; ctx.font = 'bold 14px Courier New'; ctx.textAlign = 'center'; 
             ctx.fillText('🇧🇷 CAMPEÕES DO MUNDO 2026 🏆', canvas.width / 2, 35);
 
-            // Taça da Copa do Mundo no Centro
             let tX = canvas.width / 2;
             let tY = 150;
             ctx.fillStyle = '#f1c40f'; ctx.fillRect(tX - 8, tY - 15, 16, 25);
             ctx.beginPath(); ctx.arc(tX, tY - 15, 10, Math.PI, 0, false); ctx.fill();
             ctx.fillStyle = '#d4af37'; ctx.fillRect(tX - 3, tY + 10, 6, 12); ctx.fillRect(tX - 10, tY + 22, 20, 6);
 
-            // Os 6 Lendários comemorando
             const legends = [
                 { name: "AQUILES", x: tX - 120, y: 220, shirt: "#f1c40f", hair: "#b83a14", skin: "#f5d0b1" },
                 { name: "ENDRICK", x: tX - 70, y: 250, shirt: "#f1c40f", hair: "#2c2c2c", skin: "#8d5524" },
-                { name: "RONALDO", x: tX - 25, y: 270, shirt: "#f1c40f", hair: "none", skin: "#e0ac69" }, // Careca
+                { name: "RONALDO", x: tX - 25, y: 270, shirt: "#f1c40f", hair: "none", skin: "#e0ac69" },
                 { name: "NEYMAR", x: tX + 25, y: 270, shirt: "#f1c40f", hair: "#d4af37", skin: "#e0ac69" },
                 { name: "ALISSON", x: tX + 70, y: 250, shirt: "#1abc9c", hair: "#8b4513", skin: "#f5d0b1" },
                 { name: "SÓCRATES", x: tX + 120, y: 220, shirt: "#f1c40f", hair: "#2c2c2c", skin: "#f5d0b1" }
