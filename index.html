@@ -331,7 +331,8 @@
         let currentStageIndex = 0; let currentOpponent = null; let poolTeams = []; let brazilGoals = 0; let opponentGoals = 0; let currentKick = 1; let turn = 'player_shoot';
         let isAnimating = false; let gameActive = false; let isChampionCelebration = false;
         let keeperCanMove = true;
-        let canShoot = true; // Trava contra cliques duplos/duplicação de placar
+        let canShoot = true; 
+        let evaluationDone = false; // Trava contra dupla contagem no placar
         let animFrameId = null;
         let championTimer = null;
 
@@ -372,7 +373,7 @@
             if (animFrameId) cancelAnimationFrame(animFrameId);
             if (championTimer) clearTimeout(championTimer);
             stageScreen.classList.add('hidden'); 
-            brazilGoals = 0; opponentGoals = 0; currentKick = 1; turn = 'player_shoot'; gameActive = true; keeperCanMove = true; canShoot = true; updateMatchHeader(); keeperX = 210; brazilKeeperX = 210; ballPos = { x: 210, y: 350 }; 
+            brazilGoals = 0; opponentGoals = 0; currentKick = 1; turn = 'player_shoot'; gameActive = true; keeperCanMove = true; canShoot = true; evaluationDone = false; updateMatchHeader(); keeperX = 210; brazilKeeperX = 210; ballPos = { x: 210, y: 350 }; 
             animFrameId = requestAnimationFrame(gameLoop); 
         }
 
@@ -396,6 +397,8 @@
                         ballPos.x = ballStart.x + (ballTarget.x - ballStart.x) * ballAnimProgress; 
                         ballPos.y = ballStart.y + (ballTarget.y - ballStart.y) * ballAnimProgress; 
                         if (ballPos.y <= goalBox.y + 25) { 
+                            if (evaluationDone) return; // Garante que o lance só avalia uma vez
+                            evaluationDone = true;
                             isAnimating = false; 
                             keeperCanMove = false; 
                             if (turn === 'player_shoot') {
@@ -474,6 +477,7 @@
             ballStart = { x: 210, y: 350 }; 
             ballTarget = { x: goalBox.x + 30 + Math.random() * (goalBox.width - 60), y: goalBox.y + 20 + Math.random() * 50 }; 
             ballAnimProgress = 0; 
+            evaluationDone = false;
             keeperCanMove = true;
             isAnimating = true; 
         }
@@ -633,7 +637,7 @@
             }
             if (!canShoot || isAnimating || turn !== 'player_shoot' || !menuScreen.classList.contains('hidden') || !stageScreen.classList.contains('hidden') || !resultsScreen.classList.contains('hidden') || !endScreen.classList.contains('hidden')) return; 
             
-            canShoot = false; // Trava para impedir cliques duplos durante a animação
+            canShoot = false; 
             const rect = canvas.getBoundingClientRect(); 
             const scaleX = canvas.width / rect.width; 
             const scaleY = canvas.height / rect.height; 
@@ -643,7 +647,7 @@
         }
 
         canvas.addEventListener('click', (e) => handleInput(e.clientX, e.clientY)); canvas.addEventListener('touchstart', (e) => handleInput(e.touches[0].clientX, e.touches[0].clientY), { passive: false });
-        function executePlayerShot(destX, destY) { isAnimating = true; keeperCanMove = true; isKicking = true; ballStart = { x: ballPos.x, y: ballPos.y }; ballTarget = { x: destX, y: destY }; ballAnimProgress = 0; setTimeout(() => { isKicking = false; }, 200); }
+        function executePlayerShot(destX, destY) { isAnimating = true; evaluationDone = false; keeperCanMove = true; isKicking = true; ballStart = { x: ballPos.x, y: ballPos.y }; ballTarget = { x: destX, y: destY }; ballAnimProgress = 0; setTimeout(() => { isKicking = false; }, 200); }
         drawField();
     </script>
 </body>
