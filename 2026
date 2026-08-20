@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aquiles Superstar Soccer 2026</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
+        body {
+            background-color: #0b1d0b;
+            font-family: 'Courier New', Courier, monospace;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            padding: 10px;
+        }
+        #game-container {
+            width: 100%;
+            max-width: 380px;
+            background: #153117;
+            border: 4px solid #f1c40f;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .screen {
+            width: 100%;
+            height: 100%;
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: linear-gradient(135deg, #0d1f0e 0%, #1e4d22 100%);
+            z-index: 10;
+            padding: 15px;
+            text-align: center;
+            overflow-y: auto;
+        }
+        .screen.hidden { display: none; }
+        h1 {
+            font-size: 20px;
+            color: #f1c40f;
+            text-shadow: 2px 2px #c0392b;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+        p {
+            font-size: 11px;
+            margin-bottom: 12px;
+            color: #ecf0f1;
+            line-height: 1.3;
+        }
+        .btn {
+            background-color: #27ae60;
+            color: white;
+            border: 3px solid #2ecc71;
+            padding: 9px 18px;
+            font-size: 13px;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 4px 0 #145a32;
+            transition: all 0.1s ease;
+            margin: 4px 0;
+            width: 100%;
+            max-width: 240px;
+        }
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #145a32;
+        }
+        .whatsapp-btn {
+            background-color: #25d366;
+            border-color: #2ecc71;
+            box-shadow: 0 4px 0 #128c7e;
+        }
+        #player-name {
+            width: 100%;
+            max-width: 240px;
+            padding: 8px;
+            font-size: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            text-align: center;
+            border: 2px solid #f1c40f;
+            border-radius: 6px;
+            background: #111;
+            color: #fff;
+            margin-bottom: 8px;
+            outline: none;
+        }
+        .results-box {
+            width: 100%;
+            max-width: 240px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #f1c40f;
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        .results-box h3 {
+            font-size: 11px;
+            color: #f1c40f;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            padding: 3px 0;
+            border-bottom: 1px dashed rgba(255,255,255,0.2);
+        }
+        .result-row:last-child { border-bottom: none; }
+
+        #game-header {
+            width: 100%;
+            background: #0d1a0e;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #f1c40f;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        canvas {
+            background: radial-gradient(circle, #2ecc71 0%, #229954 100%);
+            display: block;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            cursor: crosshair;
+        }
+        #instructions {
+            width: 100%;
+            background: #0d1a0e;
+            padding: 6px;
+            text-align: center;
+            font-size: 10px;
+            color: #f1c40f;
+            border-top: 2px solid #f1c40f;
+        }
+        #message-banner {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.92);
+            border: 3px solid #f1c40f;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #f1c40f;
+            text-shadow: 2px 2px #c0392b;
+            z-index: 5;
+            display: none;
+            text-align: center;
+            border-radius: 6px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- MENU SCREEN -->
+        <div id="menu-screen" class="screen">
+            <h1>AQUILES<br>SUPERSTAR SOCCER 2026</h1>
+            <p>Leve a Seleção de Aquiles rumo à taça mundial no Mata-Mata!</p>
+            <button class="btn" onclick="startWorldCup()" style="margin-top: 15px;">INICIAR PARTIDA</button>
+        </div>
+
+        <!-- STAGE ANNOUNCE SCREEN -->
+        <div id="stage-screen" class="screen hidden">
+            <h1 id="stage-title">QUARTAS DE FINAL</h1>
+            <p id="stage-subtitle">Brasil 🇧🇷 vs Argentina 🇦🇷</p>
+            <p style="font-size: 10px; color: #f1c40f;">Embate decisivo com cobranças alternadas se houver empate!</p>
+            <button class="btn" onclick="startMatch()">ENTRAR EM CAMPO</button>
+        </div>
+
+        <!-- RESULTS SCREEN -->
+        <div id="results-screen" class="screen hidden">
+            <h1>Resultados</h1>
+            <p style="font-size: 10px; color: #f1c40f;">Resultados dos outros jogos da rodada:</p>
+            
+            <div class="results-box">
+                <h3>📺 Giro da Copa</h3>
+                <div id="other-matches-list"></div>
+            </div>
+
+            <button class="btn" onclick="proceedToNextStage()">Jogar próxima fase</button>
+        </div>
+
+        <!-- GAME SCREEN HEADER -->
+        <div id="game-header">
+            <div id="match-score">BRA 0 x 0 ARG</div>
+            <div id="score-turn">Sua Vez de Bater</div>
+        </div>
+
+        <!-- CANVAS -->
+        <canvas id="fieldCanvas" width="420" height="420"></canvas>
+
+        <!-- INSTRUÇÃO -->
+        <div id="instructions">Toque no gol para chutar!</div>
+
+        <!-- MESSAGE OVERLAY -->
+        <div id="message-banner">GOL!</div>
+
+        <!-- END SCREEN -->
+        <div id="end-screen" class="screen hidden">
+            <h1 id="end-title">FIM DE JOGO</h1>
+            <p id="end-message" style="margin-bottom: 8px;">Você conseguiu!</p>
+            
+            <input type="text" id="player-name" placeholder="Digite seu Apelido" maxlength="20">
+            <button class="btn whatsapp-btn" onclick="shareOnWhatsApp()">📤 Compartilhar no Zap</button>
+            <button class="btn" onclick="returnToMenu()">MENU PRINCIPAL</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('fieldCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const teams = [
+            { 
+                name: "Argentina", flag: "🇦🇷", shirt: "#73c2fb", secondary: "#ffffff", 
+                gk: { name: "E. Martínez", number: "23", skin: "#f5d0b1", hair: "#3d2314" },
+                players: [
+                    { name: "Messi", number: "10", skin: "#f5d0b1", hair: "#8b4513" },
+                    { name: "Lautaro M.", number: "22", skin: "#f5d0b1", hair: "#2c2c2c" },
+                    { name: "Julián A.", number: "9", skin: "#f5d0b1", hair: "#3d2314" },
+                    { name: "Enzo F.", number: "24", skin: "#e0ac69", hair: "#2c2c2c" },
+                    { name: "Mac Allister", number: "20", skin: "#f5d0b1", hair: "#d4af37" }
+                ] 
+            },
+            { 
+                name: "França", flag: "🇫🇷", shirt: "#002366", secondary: "#ffffff", 
+                gk: { name: "Maignan", number: "16", skin: "#8d5524", hair: "#2c2c2c" },
+                players: [
+                    { name: "Mbappé", number: "10", skin: "#8d5524", hair: "#2c2c2c" },
+                    { name: "Griezmann", number: "7", skin: "#f5d0b1", hair: "#d4af37" },
+                    { name: "Dembélé", number: "11", skin: "#8d5524", hair: "#2c2c2c" },
+                    { name: "Tchouaméni", number: "8", skin: "#8d5524", hair: "#2c2c2c" },
+                    { name: "Saliba", number: "17", skin: "#8d5524", hair: "#2c2c2c" }
+                ] 
+            },
+            { 
+                name: "Portugal", flag: "🇵🇹", shirt: "#ff0000", secondary: "#006600", 
+                gk: { name: "D. Costa", number: "22", skin: "#f5d0b1", hair: "#2c2c2c" },
+                players: [
+                    { name: "CR7", number: "7", skin: "#e0ac69", hair: "#2c2c2c" },
+                    { name: "B. Fernandes", number: "8", skin: "#f5d0b1", hair: "#2c2c2c" },
+                    { name: "B. Silva", number: "20", skin: "#f5d0b1", hair: "#2c2c2c" },
+                    { name: "R. Leão", number: "17", skin: "#8d5524", hair: "#2c2c2c" },
+                    { name: "Rúben Dias", number: "4", skin: "#f5d0b1", hair: "#2c2c2c" }
+                ] 
+            },
+            { 
+                name: "Espanha", flag: "🇪🇸", shirt: "#aa151b", secondary: "#f1bf00", 
+                gk: { name: "Unai Simón", number: "23", skin: "#f5d0b1", hair: "#8b4513" },
+                players: [
+                    { name: "Rodri", number: "16", skin: "#f5d0b1", hair: "#2c2c2c" },
+                    { name: "Cucurella", number: "24", skin: "#f5d0b1", hair: "#8b4513" },
+                    { name: "Oyarzabal", number: "21", skin: "#f5d0b1", hair: "#8b4513" },
+                    { name: "Lamine Y.", number: "19", skin: "#e0ac69", hair: "#2c2c2c" },
+                    { name: "N. Williams", number: "11", skin: "#8d5524", hair: "#2c2c2c" }
+                ] 
+            },
+            { 
+                name: "Inglaterra", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", shirt: "#ffffff", secondary: "#ce1126", 
+                gk: { name: "Pickford", number: "1", skin: "#f5d0b1", hair: "#d4af37" },
+                players: [
+                    { name: "Kane", number: "9", skin: "#f5d0b1", hair: "#d4af37" },
+                    { name: "Bellingham", number: "10", skin: "#e0ac69", hair: "#2c2c2c" },
+                    { name: "Saka", number: "7", skin: "#8d5524", hair: "#2c2c2c" },
+                    { name: "Foden", number: "11", skin: "#f5d0b1", hair: "#d4af37" },
+                    { name: "Rice", number: "4", skin: "#f5d0b1", hair: "#8b4513" }
+                ] 
+            },
+            { 
+                name: "Alemanha", flag: "🇩🇪", shirt: "#ffffff", secondary: "#000000", 
+                gk: { name: "Neuer", number: "1", skin: "#f5d0b1", hair: "#d4af37" },
+                players: [
+                    { name: "Musiala", number: "10", skin: "#e0ac69", hair: "#2c2c2c" },
+                    { name: "Wirtz", number: "17", skin: "#f5d0b1", hair: "#d4af37" },
+                    { name: "Havertz", number: "7", skin: "#f5d0b1", hair: "#d4af37" },
+                    { name: "Sané", number: "19", skin: "#e0ac69", hair: "#2c2c2c" },
+                    { name: "Rüdiger", number: "2", skin: "#8d5524", hair: "#2c2c2c" }
+                ] 
+            },
+            { 
+                name: "Itália", flag: "🇮🇹", shirt: "#0066cc", secondary: "#ffffff", 
+                gk: { name: "Buffon", number: "1", skin: "#f5d0b1", hair: "#8b4513" },
+                players: [
+                    { name: "Baggio", number: "10", skin: "#f5d0b1", hair: "#2c2c2c" },
+                    { name: "Totti", number: "10", skin: "#f5d0b1", hair: "#d4af37" },
+                    { name: "Pirlo", number: "21", skin: "#f5d0b1", hair: "#8b4513" },
+                    { name: "Tonali", number: "8", skin: "#f5d0b1", hair: "#d4af37" },
+                    { name: "Maldini", number: "3", skin: "#f5d0b1", hair: "#8b4513" }
+                ] 
+            }
+        ];
+
+        // --- SISTEMA DE ÁUDIO ---
+        let audioCtx = null;
+        let menuMusicInterval = null;
+        let chantInterval = null;
+        let isMenuMusicPlaying = false;
+        
+        function startMenuMusic() { if (isMenuMusicPlaying) return; try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); isMenuMusicPlaying = true; const melody = [330, 330, 392, 330, 261, 293, 330, 392, 440, 392, 330, 293, 261, 293, 330, 261]; let idx = 0; menuMusicInterval = setInterval(() => { if (!isMenuMusicPlaying || !audioCtx) return; let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain(); osc.type = 'square'; osc.frequency.setValueAtTime(melody[idx], audioCtx.currentTime); gain.gain.setValueAtTime(0.04, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.14); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.16); idx = (idx + 1) % melody.length; }, 140); } catch (e) {} }
+        function stopMenuMusic() { isMenuMusicPlaying = false; if (menuMusicInterval) clearInterval(menuMusicInterval); if (chantInterval) clearInterval(chantInterval); }
+        function playCrowdCheer() { if (!audioCtx) return; try { let bSize = audioCtx.sampleRate * 1.5; let b = audioCtx.createBuffer(1, bSize, audioCtx.sampleRate); let out = b.getChannelData(0); for (let i = 0; i < bSize; i++) out[i] = Math.random() * 2 - 1; let noise = audioCtx.createBufferSource(); noise.buffer = b; let filter = audioCtx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = 900; let gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.01, audioCtx.currentTime); gain.gain.linearRampToValueAtTime(0.18, audioCtx.currentTime + 0.3); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5); noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination); noise.start(); } catch(e) {} }
+        function playBrasilChant() { if (!audioCtx) return; try { const notes = [{f:392,d:0.25}, {f:523,d:0.35}, {f:440,d:0.12}, {f:440,d:0.12}, {f:440,d:0.12}, {f:392,d:0.12}, {f:392,d:0.12}, {f:392,d:0.25}, {f:523,d:0.45}]; let t = audioCtx.currentTime; notes.forEach(n => { let osc = audioCtx.createOscillator(); let g = audioCtx.createGain(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(n.f, t); g.gain.setValueAtTime(0.07, t); g.gain.exponentialRampToValueAtTime(0.001, t + n.d); osc.connect(g); g.connect(audioCtx.destination); osc.start(t); osc.stop(t + n.d); t += n.d + 0.04; }); } catch(e) {} }
+        function startChampionChantLoop() { if (chantInterval) clearInterval(chantInterval); playBrasilChant(); chantInterval = setInterval(() => { if (!isChampionCelebration) { clearInterval(chantInterval); return; } playBrasilChant(); }, 3200); }
+
+        // --- VARIÁVEIS DE JOGO ---
+        let currentStageIndex = 0; let currentOpponent = null; let poolTeams = []; let brazilGoals = 0; let opponentGoals = 0; let currentKick = 1; let turn = 'player_shoot';
+        let isAnimating = false; let gameActive = false; let isChampionCelebration = false;
+        let animFrameId = null; // Evita loop duplo
+
+        const scoreDisplay = document.getElementById('match-score');
+        const turnDisplay = document.getElementById('score-turn');
+        const menuScreen = document.getElementById('menu-screen');
+        const stageScreen = document.getElementById('stage-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const endScreen = document.getElementById('end-screen');
+        const messageBanner = document.getElementById('message-banner');
+
+        const goalBox = { x: 70, y: 55, width: 280, height: 140 }; 
+        const keeperY = 85; // Alinhado perfeitamente com a altura onde a bola chega na linha do gol
+        let keeperX = 210; let keeperDir = 1; let brazilKeeperX = 210;
+        let ballPos = { x: 210, y: 350 }; let aquilesPos = { x: 210, y: 390 }; let isKicking = false;
+        let ballStart = { x: 210, y: 350 }; let ballTarget = { x: 210, y: 70 }; let ballAnimProgress = 0;
+
+        function startWorldCup() { currentStageIndex = 0; isChampionCelebration = false; poolTeams = [...teams]; pickNewOpponent(); showStageScreen(); }
+        
+        function pickNewOpponent() { 
+            let available = poolTeams.filter(t => t.name !== currentOpponent?.name); 
+            let team = available[Math.floor(Math.random() * available.length)]; 
+            currentOpponent = { 
+                name: team.name, 
+                flag: team.flag, 
+                shirt: team.shirt, 
+                secondary: team.secondary, 
+                squad: team.players, 
+                player: team.players[0], 
+                gk: team.gk 
+            }; 
+        }
+
+        function showStageScreen() { stopMenuMusic(); startMenuMusic(); menuScreen.classList.add('hidden'); endScreen.classList.add('hidden'); resultsScreen.classList.add('hidden'); stageScreen.classList.remove('hidden'); document.getElementById('stage-title').innerText = currentStageIndex === 0 ? "QUARTAS DE FINAL" : (currentStageIndex === 1 ? "SEMIFINAL" : "GRANDE FINAL"); document.getElementById('stage-subtitle').innerText = `Brasil 🇧🇷 (Aquiles FC) vs ${currentOpponent.name} ${currentOpponent.flag} (${currentOpponent.player.name})`; }
+        
+        function startMatch() { 
+            stopMenuMusic(); 
+            if (animFrameId) cancelAnimationFrame(animFrameId);
+            stageScreen.classList.add('hidden'); 
+            brazilGoals = 0; opponentGoals = 0; currentKick = 1; turn = 'player_shoot'; gameActive = true; updateMatchHeader(); keeperX = 210; brazilKeeperX = 210; ballPos = { x: 210, y: 350 }; 
+            animFrameId = requestAnimationFrame(gameLoop); 
+        }
+
+        function updateMatchHeader() { scoreDisplay.innerText = `BRA ${brazilGoals} x ${opponentGoals} ${currentOpponent.name.toUpperCase().slice(0,3)}`; turnDisplay.innerText = currentKick <= 5 ? (turn === 'player_shoot' ? `Aquiles!` : `Defesa!`) : `Morte Súbita`; }
+
+        function gameLoop() {
+            if (!gameActive) return;
+            if (menuScreen.classList.contains('hidden') && stageScreen.classList.contains('hidden') && resultsScreen.classList.contains('hidden') && endScreen.classList.contains('hidden')) {
+                if (isChampionCelebration) { 
+                    drawChampionScene(); 
+                } else {
+                    let kX = (turn === 'player_shoot') ? keeperX : brazilKeeperX;
+                    kX += keeperDir * (3.2 + (Math.min(currentKick, 5) * 1.4));
+                    if (kX > goalBox.x + goalBox.width - 35 || kX < goalBox.x + 35) keeperDir *= -1;
+                    if (turn === 'player_shoot') keeperX = kX; else brazilKeeperX = kX;
+                    
+                    if (isAnimating) { 
+                        ballAnimProgress += 0.18; 
+                        ballPos.x = ballStart.x + (ballTarget.x - ballStart.x) * ballAnimProgress; 
+                        ballPos.y = ballStart.y + (ballTarget.y - ballStart.y) * ballAnimProgress; 
+                        if (ballPos.y <= goalBox.y + 25) { 
+                            isAnimating = false; 
+                            turn === 'player_shoot' ? evaluatePlayerShot(ballPos.x, keeperX) : evaluateAiShot(ballPos.x, brazilKeeperX); 
+                        } 
+                    }
+                    drawField();
+                }
+            }
+            animFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        // --- LÓGICA DE JOGO ---
+        function evaluatePlayerShot(ballX, currentKeeperX) {
+            let isGoal = Math.abs(ballX - currentKeeperX) > 48;
+            if (isGoal) { brazilGoals++; playCrowdCheer(); showBanner(`GOL DO AQUILES! ⚽`, "#f1c40f"); } 
+            else { showBanner(`Defesa de ${currentOpponent.gk.name}! 🧤`, "#e74c3c"); }
+            updateMatchHeader();
+            setTimeout(() => { messageBanner.style.display = 'none'; ballPos = { x: 210, y: 350 }; ballAnimProgress = 0; turn = 'ai_shoot'; updateMatchHeader(); setTimeout(executeAiShotSequence, 1000); }, 1200);
+        }
+
+        function evaluateAiShot(ballX, currentBrazilKeeperX) {
+            if (Math.abs(ballX - currentBrazilKeeperX) < 48) { playCrowdCheer(); showBanner(`Defesa do Aquiles! 🇧🇷🧤`, "#f1c40f"); } 
+            else { opponentGoals++; showBanner(`GOL DE ${currentOpponent.player.name.toUpperCase()}! ⚽`, "#e74c3c"); }
+            updateMatchHeader();
+            setTimeout(() => {
+                messageBanner.style.display = 'none'; ballPos = { x: 210, y: 350 }; ballAnimProgress = 0;
+                if (currentKick <= 5) { if (Math.abs(brazilGoals - opponentGoals) > (5 - currentKick)) checkMatchOver(); else if (currentKick === 5 && brazilGoals === opponentGoals) { currentKick++; turn = 'player_shoot'; showBanner("EMPATE! ALTERNADAS!", "#f1c40f"); updateMatchHeader(); } else { currentKick++; turn = 'player_shoot'; updateMatchHeader(); } }
+                else { if (brazilGoals !== opponentGoals) checkMatchOver(); else { currentKick++; turn = 'player_shoot'; showBanner("PRÓXIMA RODADA!", "#f1c40f"); updateMatchHeader(); } }
+            }, 1400);
+        }
+
+        function executeAiShotSequence() { 
+            if (!gameActive) return; 
+            currentOpponent.player = currentOpponent.squad[Math.floor(Math.random() * currentOpponent.squad.length)];
+            ballStart = { x: 210, y: 350 }; 
+            ballTarget = { x: goalBox.x + 30 + Math.random() * (goalBox.width - 60), y: goalBox.y + 20 + Math.random() * 50 }; 
+            ballAnimProgress = 0; 
+            isAnimating = true; 
+        }
+
+        function checkMatchOver() { 
+            gameActive = false; 
+            if (brazilGoals > opponentGoals) { 
+                if (currentStageIndex === 2) { 
+                    isChampionCelebration = true; 
+                    gameActive = true; 
+                    startChampionChantLoop(); 
+                } else {
+                    showResultsScreen(); 
+                }
+            } else {
+                showEndScreen(false, false); 
+            }
+        }
+
+        function showResultsScreen() { startMenuMusic(); let otherTeams = teams.filter(t => t.name !== currentOpponent.name); let shuffled = [...otherTeams].sort(() => 0.5 - Math.random()); let html = `<div class="result-row"><span>Brasil 🇧🇷 ${brazilGoals} x ${opponentGoals} ${currentOpponent.flag} ${currentOpponent.name}</span> <span>(Classificado)</span></div>`; if (shuffled.length >= 2) { html += `<div class="result-row"><span>${shuffled[0].flag} ${shuffled[0].name} ${Math.floor(Math.random()*3)} x ${Math.floor(Math.random()*3)} ${shuffled[1].flag} ${shuffled[1].name}</span></div>`; } document.getElementById('other-matches-list').innerHTML = html; resultsScreen.classList.remove('hidden'); }
+        function proceedToNextStage() { resultsScreen.classList.add('hidden'); currentStageIndex++; pickNewOpponent(); showStageScreen(); }
+        function showEndScreen(isChampion) { startMenuMusic(); endScreen.classList.remove('hidden'); document.getElementById('end-title').innerText = isChampion ? "BRASIL CAMPEÃO!" : "ELIMINADO"; document.getElementById('end-message').innerText = isChampion ? `Aquiles levantou a Taça!` : `Brasil eliminado por ${currentOpponent.name}.`; }
+        function showBanner(text, color) { messageBanner.innerText = text; messageBanner.style.color = color; messageBanner.style.display = 'block'; }
+        function shareOnWhatsApp() { let text = `⚽ *AQUILES SUPERSTAR SOCCER 2026* 🇧🇷\nSou craque e levei a Seleção do Aquiles ao título!\nhttps://comfy-sunburst-37e602.netlify.app`; window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank'); }
+        function returnToMenu() { 
+            startMenuMusic(); 
+            isChampionCelebration = false;
+            endScreen.classList.add('hidden'); 
+            menuScreen.classList.remove('hidden'); 
+        }
+        
+        // --- DESENHO NO CANVAS ---
+        function drawField() { 
+            ctx.fillStyle = '#1e7b3e'; ctx.fillRect(0, 0, canvas.width, canvas.height); 
+            ctx.fillStyle = '#27ae60'; for (let i = 0; i < canvas.height; i += 48) if ((i / 48) % 2 === 0) ctx.fillRect(0, i, canvas.width, 24); 
+            ctx.strokeStyle = '#dcdde1'; ctx.lineWidth = 3; ctx.strokeRect(goalBox.x, goalBox.y, goalBox.width, goalBox.height); 
+            ctx.strokeRect(goalBox.x + 100, goalBox.y, 80, 40); ctx.beginPath(); ctx.arc(210, goalBox.y + goalBox.height, 40, 0, Math.PI); ctx.stroke(); 
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)p'; ctx.lineWidth = 1; 
+            for (let x = goalBox.x + 20; x < goalBox.x + goalBox.width; x += 20) { ctx.beginPath(); ctx.moveTo(x, goalBox.y); ctx.lineTo(x, goalBox.y + goalBox.height); ctx.stroke(); } 
+            for (let y = goalBox.y + 20; y < goalBox.y + goalBox.height; y += 20) { ctx.beginPath(); ctx.moveTo(goalBox.x, y); ctx.lineTo(goalBox.x + goalBox.width, y); ctx.stroke(); } 
+            
+            turn === 'player_shoot' ? drawOpponentKeeper(keeperX, keeperY) : drawAquilesKeeper(brazilKeeperX, keeperY); 
+            turn === 'player_shoot' ? drawAquiles(210, 390, isKicking) : drawOpponentStriker(210, 390); 
+            drawBall(ballPos.x, ballPos.y); 
+        }
+        
+        function drawOpponentKeeper(x, y) { 
+            ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(x, y + 14, 16, 6, 0, 0, Math.PI * 2); ctx.fill(); 
+            ctx.fillStyle = currentOpponent.shirt; ctx.fillRect(x - 14, y - 18, 28, 30); 
+            ctx.fillStyle = currentOpponent.secondary || '#ffffff'; ctx.font = 'bold 11px Courier New'; ctx.textAlign = 'center'; ctx.fillText(currentOpponent.gk.number, x, y - 1);
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 7px Courier New'; ctx.fillText(currentOpponent.gk.name, x, y - 20); 
+            ctx.fillStyle = currentOpponent.gk.skin; ctx.beginPath(); ctx.arc(x, y - 28, 8, 0, Math.PI * 2); ctx.fill(); 
+            ctx.fillStyle = currentOpponent.gk.hair; ctx.beginPath(); ctx.arc(x, y - 31, 7.5, Math.PI, Math.PI * 2); ctx.fill();
+        }
+
+        function drawAquilesKeeper(x, y) { 
+            ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(x, y + 14, 16, 6, 0, 0, Math.PI * 2); ctx.fill(); 
+            ctx.fillStyle = '#f1c40f'; ctx.fillRect(x - 14, y - 18, 28, 30); 
+            ctx.fillStyle = '#000000'; ctx.font = 'bold 11px Courier New'; ctx.textAlign = 'center'; ctx.fillText("1", x, y - 1);
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 7px Courier New'; ctx.fillText("AQUILES", x, y - 20); 
+            ctx.fillStyle = '#f5d0b1'; ctx.beginPath(); ctx.arc(x, y - 28, 8, 0, Math.PI * 2); ctx.fill(); 
+            ctx.fillStyle = '#b83a14'; ctx.beginPath(); ctx.arc(x, y - 31, 7.5, Math.PI, Math.PI * 2); ctx.fill();
+        }
+
+        function drawAquiles(x, y, kicking) { 
+            ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(x, y + 16, 15, 6, 0, 0, Math.PI * 2); ctx.fill(); 
+            ctx.fillStyle = '#f1c40f'; ctx.fillRect(x - 13, y - 22, 26, 28); 
+            ctx.fillStyle = '#000000'; ctx.font = 'bold 11px Courier New'; ctx.textAlign = 'center'; ctx.fillText("10", x, y - 5);
+            ctx.fillStyle = '#000000'; ctx.font = 'bold 7px Courier New'; ctx.fillText('AQUILES', x, y - 13); 
+            ctx.fillStyle = '#f5d0b1'; ctx.beginPath(); ctx.arc(x, y - 30, 8, 0, Math.PI * 2); ctx.fill(); 
+            ctx.fillStyle = '#b83a14'; ctx.beginPath(); ctx.arc(x, y - 33, 7.5, Math.PI, Math.PI * 2); ctx.fill();
+        }
+
+        function drawOpponentStriker(x, y) { 
+            ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(x, y + 16, 14, 6, 0, 0, Math.PI * 2); ctx.fill(); 
+            ctx.fillStyle = currentOpponent.shirt; ctx.fillRect(x - 12, y - 22, 24, 28); 
+            ctx.fillStyle = currentOpponent.secondary || '#ffffff'; ctx.font = 'bold 11px Courier New'; ctx.textAlign = 'center'; ctx.fillText(currentOpponent.player.number, x, y - 5);
+            ctx.fillStyle = currentOpponent.player.skin; ctx.beginPath(); ctx.arc(x, y - 30, 8, 0, Math.PI * 2); ctx.fill(); 
+            ctx.fillStyle = currentOpponent.player.hair; ctx.beginPath(); ctx.arc(x, y - 33, 7.5, Math.PI, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 7px Courier New'; ctx.fillText(currentOpponent.player.name, x, y - 14); 
+        }
+
+        function drawBall(x, y) { ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.beginPath(); ctx.ellipse(x, y + 8, 6, 3, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 1.5; ctx.stroke(); }
+        
+        // --- CENA DE CAMPEÃO COM OS 6 CRAQUES E A TAÇA ---
+        function drawChampionScene() { 
+            ctx.fillStyle = '#0b1d0b'; ctx.fillRect(0, 0, canvas.width, canvas.height); 
+            for (let i = 0; i < 50; i++) { 
+                ctx.fillStyle = (i % 2 === 0) ? '#f1c40f' : '#ffffff'; 
+                ctx.fillRect((i * 35) % canvas.width, (Date.now() / 8 + i * 18) % canvas.height, 4, 4); 
+            } 
+            
+            ctx.fillStyle = '#f1c40f'; ctx.font = 'bold 14px Courier New'; ctx.textAlign = 'center'; 
+            ctx.fillText('🇧🇷 CAMPEÕES DO MUNDO 2026 🏆', canvas.width / 2, 35);
+
+            // Taça da Copa do Mundo no Centro
+            let tX = canvas.width / 2;
+            let tY = 150;
+            ctx.fillStyle = '#f1c40f'; ctx.fillRect(tX - 8, tY - 15, 16, 25);
+            ctx.beginPath(); ctx.arc(tX, tY - 15, 10, Math.PI, 0, false); ctx.fill();
+            ctx.fillStyle = '#d4af37'; ctx.fillRect(tX - 3, tY + 10, 6, 12); ctx.fillRect(tX - 10, tY + 22, 20, 6);
+
+            // Os 6 Lendários comemorando
+            const legends = [
+                { name: "AQUILES", x: tX - 120, y: 220, shirt: "#f1c40f", hair: "#b83a14", skin: "#f5d0b1" },
+                { name: "ENDRICK", x: tX - 70, y: 250, shirt: "#f1c40f", hair: "#2c2c2c", skin: "#8d5524" },
+                { name: "RONALDO", x: tX - 25, y: 270, shirt: "#f1c40f", hair: "none", skin: "#e0ac69" }, // Careca
+                { name: "NEYMAR", x: tX + 25, y: 270, shirt: "#f1c40f", hair: "#d4af37", skin: "#e0ac69" },
+                { name: "ALISSON", x: tX + 70, y: 250, shirt: "#1abc9c", hair: "#8b4513", skin: "#f5d0b1" },
+                { name: "SÓCRATES", x: tX + 120, y: 220, shirt: "#f1c40f", hair: "#2c2c2c", skin: "#f5d0b1" }
+            ];
+
+            legends.forEach(l => {
+                ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(l.x, l.y + 16, 12, 5, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = l.shirt; ctx.fillRect(l.x - 10, l.y - 12, 20, 24);
+                ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.strokeRect(l.x - 10, l.y - 12, 20, 24);
+
+                ctx.fillStyle = '#ffffff'; ctx.font = 'bold 7px Courier New'; ctx.textAlign = 'center'; 
+                ctx.fillText(l.name, l.x, l.y - 16);
+
+                ctx.fillStyle = l.skin; ctx.beginPath(); ctx.arc(l.x, l.y - 21, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+                if (l.hair !== "none") {
+                    ctx.fillStyle = l.hair;
+                    ctx.beginPath(); ctx.arc(l.x, l.y - 23, 5.5, Math.PI, Math.PI * 2); ctx.fill();
+                }
+            });
+
+            ctx.fillStyle = '#ffffff'; ctx.font = '10px Courier New';
+            ctx.fillText('Toque em MENU PRINCIPAL para jogar novamente', canvas.width / 2, canvas.height - 20);
+        }
+
+        function handleInput(clientX, clientY) { if (isAnimating || isChampionCelebration || turn !== 'player_shoot' || !menuScreen.classList.contains('hidden') || !stageScreen.classList.contains('hidden') || !resultsScreen.classList.contains('hidden') || !endScreen.classList.contains('hidden')) return; const rect = canvas.getBoundingClientRect(); const scaleX = canvas.width / rect.width; const scaleY = canvas.height / rect.height; let destX = Math.max(goalBox.x + 15, Math.min((clientX - rect.left) * scaleX, goalBox.x + goalBox.width - 15)); let destY = Math.max(goalBox.y + 10, Math.min((clientY - rect.top) * scaleY, goalBox.y + goalBox.height - 10)); executePlayerShot(destX, destY); }
+        canvas.addEventListener('click', (e) => handleInput(e.clientX, e.clientY)); canvas.addEventListener('touchstart', (e) => handleInput(e.touches[0].clientX, e.touches[0].clientY), { passive: false });
+        function executePlayerShot(destX, destY) { isAnimating = true; isKicking = true; ballStart = { x: ballPos.x, y: ballPos.y }; ballTarget = { x: destX, y: destY }; ballAnimProgress = 0; setTimeout(() => { isKicking = false; }, 200); }
+        drawField();
+    </script>
+</body>
+</html>
