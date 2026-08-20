@@ -330,6 +330,7 @@
         // --- VARIÁVEIS DE JOGO ---
         let currentStageIndex = 0; let currentOpponent = null; let poolTeams = []; let brazilGoals = 0; let opponentGoals = 0; let currentKick = 1; let turn = 'player_shoot';
         let isAnimating = false; let gameActive = false; let isChampionCelebration = false;
+        let keeperCanMove = true;
         let animFrameId = null;
         let championTimer = null;
 
@@ -370,7 +371,7 @@
             if (animFrameId) cancelAnimationFrame(animFrameId);
             if (championTimer) clearTimeout(championTimer);
             stageScreen.classList.add('hidden'); 
-            brazilGoals = 0; opponentGoals = 0; currentKick = 1; turn = 'player_shoot'; gameActive = true; updateMatchHeader(); keeperX = 210; brazilKeeperX = 210; ballPos = { x: 210, y: 350 }; 
+            brazilGoals = 0; opponentGoals = 0; currentKick = 1; turn = 'player_shoot'; gameActive = true; keeperCanMove = true; updateMatchHeader(); keeperX = 210; brazilKeeperX = 210; ballPos = { x: 210, y: 350 }; 
             animFrameId = requestAnimationFrame(gameLoop); 
         }
 
@@ -382,10 +383,12 @@
                 if (isChampionCelebration) { 
                     drawChampionScene(); 
                 } else {
-                    let kX = (turn === 'player_shoot') ? keeperX : brazilKeeperX;
-                    kX += keeperDir * (3.2 + (Math.min(currentKick, 5) * 1.4));
-                    if (kX > goalBox.x + goalBox.width - 35 || kX < goalBox.x + 35) keeperDir *= -1;
-                    if (turn === 'player_shoot') keeperX = kX; else brazilKeeperX = kX;
+                    if (keeperCanMove) {
+                        let kX = (turn === 'player_shoot') ? keeperX : brazilKeeperX;
+                        kX += keeperDir * (3.2 + (Math.min(currentKick, 5) * 1.4));
+                        if (kX > goalBox.x + goalBox.width - 35 || kX < goalBox.x + 35) keeperDir *= -1;
+                        if (turn === 'player_shoot') keeperX = kX; else brazilKeeperX = kX;
+                    }
                     
                     if (isAnimating) { 
                         ballAnimProgress += 0.18; 
@@ -393,7 +396,12 @@
                         ballPos.y = ballStart.y + (ballTarget.y - ballStart.y) * ballAnimProgress; 
                         if (ballPos.y <= goalBox.y + 25) { 
                             isAnimating = false; 
-                            turn === 'player_shoot' ? evaluatePlayerShot(ballPos.x, keeperX) : evaluateAiShot(ballPos.x, brazilKeeperX); 
+                            keeperCanMove = false; // Trava o goleiro instantaneamente onde ele estava na defesa
+                            if (turn === 'player_shoot') {
+                                evaluatePlayerShot(ballPos.x, keeperX);
+                            } else {
+                                evaluateAiShot(ballPos.x, brazilKeeperX);
+                            }
                         } 
                     }
                     drawField();
@@ -408,17 +416,49 @@
             if (isGoal) { brazilGoals++; playCrowdCheer(); showBanner(`GOL DO AQUILES! ⚽`, "#f1c40f"); } 
             else { showBanner(`Defesa de ${currentOpponent.gk.name}! 🧤`, "#e74c3c"); }
             updateMatchHeader();
-            setTimeout(() => { messageBanner.style.display = 'none'; ballPos = { x: 210, y: 350 }; ballAnimProgress = 0; turn = 'ai_shoot'; updateMatchHeader(); setTimeout(executeAiShotSequence, 1000); }, 1200);
+            setTimeout(() => { 
+                messageBanner.style.display = 'none'; 
+                ballPos = { x: 210, y: 350 }; 
+                ballAnimProgress = 0; 
+                turn = 'ai_shoot'; 
+                keeperCanMove = true;
+                updateMatchHeader(); 
+                setTimeout(executeAiShotSequence, 1000); 
+            }, 1200);
         }
 
         function evaluateAiShot(ballX, currentBrazilKeeperX) {
-            if (Math.abs(ballX - currentBrazilKeeperX) < 48) { playCrowdCheer(); showBanner(`Defesa do Aquiles! 🇧🇷🧤`, "#f1c40f"); } 
-            else { opponentGoals++; showBanner(`GOL DE ${currentOpponent.player.name.toUpperCase()}! ⚽`, "#e74c3c"); }
+            let isSave = Math.abs(ballX - currentBrazilKeeperX) < 48;
+            if (isSave) { 
+                brazilKeeperX = currentBrazilKeeperX; 
+                ballPos.x = brazilKeeperX;
+                ballPos.y = goalBox.y + 25; 
+                playCrowdCheer(); 
+                showBanner(`Defesa do Aquiles! 🇧🇷🧤`, "#f1c40f"); 
+            } else { 
+                opponentGoals++; 
+                showBanner(`GOL DE ${currentOpponent.player.name.toUpperCase()}! ⚽`, "#e74c3c"); 
+            }
             updateMatchHeader();
             setTimeout(() => {
-                messageBanner.style.display = 'none'; ballPos = { x: 210, y: 350 }; ballAnimProgress = 0;
-                if (currentKick <= 5) { if (Math.abs(brazilGoals - opponentGoals) > (5 - currentKick)) checkMatchOver(); else if (currentKick === 5 && brazilGoals === opponentGoals) { currentKick++; turn = 'player_shoot'; showBanner("EMPATE! ALTERNADAS!", "#f1c40f"); updateMatchHeader(); } else { currentKick++; turn = 'player_shoot'; updateMatchHeader(); } }
-                else { if (brazilGoals !== opponentGoals) checkMatchOver(); else { currentKick++; turn = 'player_shoot'; showBanner("PRÓXIMA RODADA!", "#f1c40f"); updateMatchHeader(); } }
+                messageBanner.style.display = 'none'; 
+                ballPos = { x: 210, y: 350 }; 
+                ballAnimProgress = 0;
+                if (currentKick <= 5) { 
+                    if (Math.abs(brazilGoals - opponentGoals) > (5 - currentKick)) {
+                        checkMatchOver(); 
+                    } else if (currentKick === 5 && brazilGoals === opponentGoals) { 
+                        currentKick++; turn = 'player_shoot'; keeperCanMove = true; showBanner("EMPATE! ALTERNADAS!", "#f1c40f"); updateMatchHeader(); 
+                    } else { 
+                        currentKick++; turn = 'player_shoot'; keeperCanMove = true; updateMatchHeader(); 
+                    } 
+                } else { 
+                    if (brazilGoals !== opponentGoals) {
+                        checkMatchOver(); 
+                    } else { 
+                        currentKick++; turn = 'player_shoot'; keeperCanMove = true; showBanner("PRÓXIMA RODADA!", "#f1c40f"); updateMatchHeader(); 
+                    } 
+                }
             }, 1400);
         }
 
@@ -428,6 +468,7 @@
             ballStart = { x: 210, y: 350 }; 
             ballTarget = { x: goalBox.x + 30 + Math.random() * (goalBox.width - 60), y: goalBox.y + 20 + Math.random() * 50 }; 
             ballAnimProgress = 0; 
+            keeperCanMove = true;
             isAnimating = true; 
         }
 
@@ -523,7 +564,7 @@
 
         function drawBall(x, y) { ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.beginPath(); ctx.ellipse(x, y + 8, 6, 3, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 1.5; ctx.stroke(); }
         
-        // --- CENA DE CAMPEÃO COM OS 6 CRAQUES E TAÇA CORRIGIDA ---
+        // --- CENA DE CAMPEÃO COM OS 6 CRAQUES E TAÇA TRADICIONAL ---
         function drawChampionScene() { 
             ctx.fillStyle = '#0b1d0b'; ctx.fillRect(0, 0, canvas.width, canvas.height); 
             for (let i = 0; i < 50; i++) { 
@@ -534,15 +575,11 @@
             ctx.fillStyle = '#f1c40f'; ctx.font = 'bold 14px Courier New'; ctx.textAlign = 'center'; 
             ctx.fillText('🇧🇷 CAMPEÕES DO MUNDO 2026 🏆', canvas.width / 2, 35);
 
-            // Taça do Mundo Corrigida (Formato Clássico)
             let tX = canvas.width / 2;
             let tY = 150;
-            // Base da taça (Malaquita verde tradicional + base dourada)
             ctx.fillStyle = '#145a32'; ctx.fillRect(tX - 12, tY + 16, 24, 8);
             ctx.fillStyle = '#d4af37'; ctx.fillRect(tX - 8, tY + 10, 16, 6);
-            // Haste
             ctx.fillRect(tX - 3, tY, 6, 10);
-            // Corpo da taça (copo superior)
             ctx.beginPath();
             ctx.moveTo(tX - 12, tY - 14);
             ctx.lineTo(tX + 12, tY - 14);
@@ -550,11 +587,9 @@
             ctx.lineTo(tX - 7, tY);
             ctx.closePath();
             ctx.fillStyle = '#f1c40f'; ctx.fill();
-            // Globo/topo da taça
             ctx.beginPath(); ctx.arc(tX, tY - 16, 9, 0, Math.PI * 2); 
             ctx.fillStyle = '#f1c40f'; ctx.fill();
 
-            // Os 6 Lendários comemorando
             const legends = [
                 { name: "AQUILES", x: tX - 120, y: 220, shirt: "#f1c40f", hair: "#b83a14", skin: "#f5d0b1" },
                 { name: "ENDRICK", x: tX - 70, y: 250, shirt: "#f1c40f", hair: "#2c2c2c", skin: "#8d5524" },
@@ -598,7 +633,7 @@
         }
 
         canvas.addEventListener('click', (e) => handleInput(e.clientX, e.clientY)); canvas.addEventListener('touchstart', (e) => handleInput(e.touches[0].clientX, e.touches[0].clientY), { passive: false });
-        function executePlayerShot(destX, destY) { isAnimating = true; isKicking = true; ballStart = { x: ballPos.x, y: ballPos.y }; ballTarget = { x: destX, y: destY }; ballAnimProgress = 0; setTimeout(() => { isKicking = false; }, 200); }
+        function executePlayerShot(destX, destY) { isAnimating = true; keeperCanMove = true; isKicking = true; ballStart = { x: ballPos.x, y: ballPos.y }; ballTarget = { x: destX, y: destY }; ballAnimProgress = 0; setTimeout(() => { isKicking = false; }, 200); }
         drawField();
     </script>
 </body>
