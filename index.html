@@ -331,6 +331,7 @@
         let currentStageIndex = 0; let currentOpponent = null; let poolTeams = []; let brazilGoals = 0; let opponentGoals = 0; let currentKick = 1; let turn = 'player_shoot';
         let isAnimating = false; let gameActive = false; let isChampionCelebration = false;
         let animFrameId = null;
+        let championTimer = null;
 
         const scoreDisplay = document.getElementById('match-score');
         const turnDisplay = document.getElementById('score-turn');
@@ -367,6 +368,7 @@
         function startMatch() { 
             stopMenuMusic(); 
             if (animFrameId) cancelAnimationFrame(animFrameId);
+            if (championTimer) clearTimeout(championTimer);
             stageScreen.classList.add('hidden'); 
             brazilGoals = 0; opponentGoals = 0; currentKick = 1; turn = 'player_shoot'; gameActive = true; updateMatchHeader(); keeperX = 210; brazilKeeperX = 210; ballPos = { x: 210, y: 350 }; 
             animFrameId = requestAnimationFrame(gameLoop); 
@@ -436,6 +438,10 @@
                     isChampionCelebration = true; 
                     gameActive = true; 
                     startChampionChantLoop(); 
+                    championTimer = setTimeout(() => { 
+                        gameActive = false; 
+                        showEndScreen(true); 
+                    }, 6000); 
                 } else {
                     showResultsScreen(); 
                 }
@@ -446,11 +452,19 @@
 
         function showResultsScreen() { startMenuMusic(); let otherTeams = teams.filter(t => t.name !== currentOpponent.name); let shuffled = [...otherTeams].sort(() => 0.5 - Math.random()); let html = `<div class="result-row"><span>Brasil 🇧🇷 ${brazilGoals} x ${opponentGoals} ${currentOpponent.flag} ${currentOpponent.name}</span> <span>(Classificado)</span></div>`; if (shuffled.length >= 2) { html += `<div class="result-row"><span>${shuffled[0].flag} ${shuffled[0].name} ${Math.floor(Math.random()*3)} x ${Math.floor(Math.random()*3)} ${shuffled[1].flag} ${shuffled[1].name}</span></div>`; } document.getElementById('other-matches-list').innerHTML = html; resultsScreen.classList.remove('hidden'); }
         function proceedToNextStage() { resultsScreen.classList.add('hidden'); currentStageIndex++; pickNewOpponent(); showStageScreen(); }
-        function showEndScreen(isChampion) { startMenuMusic(); endScreen.classList.remove('hidden'); document.getElementById('end-title').innerText = isChampion ? "BRASIL CAMPEÃO!" : "ELIMINADO"; document.getElementById('end-message').innerText = isChampion ? `Aquiles levantou a Taça!` : `Brasil eliminado por ${currentOpponent.name}.`; }
+        function showEndScreen(isChampion) { 
+            if (championTimer) clearTimeout(championTimer);
+            isChampionCelebration = false;
+            startMenuMusic(); 
+            endScreen.classList.remove('hidden'); 
+            document.getElementById('end-title').innerText = isChampion ? "BRASIL CAMPEÃO!" : "ELIMINADO"; 
+            document.getElementById('end-message').innerText = isChampion ? `Aquiles levantou a Taça!` : `Brasil eliminado por ${currentOpponent.name}.`; 
+        }
         function showBanner(text, color) { messageBanner.innerText = text; messageBanner.style.color = color; messageBanner.style.display = 'block'; }
         function shareOnWhatsApp() { let text = `⚽ *AQUILES SUPERSTAR SOCCER 2026* 🇧🇷\nSou craque e levei a Seleção do Aquiles ao título!\nhttps://comfy-sunburst-37e602.netlify.app`; window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank'); }
         function returnToMenu() { 
             startMenuMusic(); 
+            if (championTimer) clearTimeout(championTimer);
             isChampionCelebration = false;
             endScreen.classList.add('hidden'); 
             menuScreen.classList.remove('hidden'); 
@@ -509,7 +523,7 @@
 
         function drawBall(x, y) { ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.beginPath(); ctx.ellipse(x, y + 8, 6, 3, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 1.5; ctx.stroke(); }
         
-        // --- CENA DE CAMPEÃO COM OS 6 CRAQUES E A TAÇA ---
+        // --- CENA DE CAMPEÃO COM OS 6 CRAQUES E TAÇA CORRIGIDA ---
         function drawChampionScene() { 
             ctx.fillStyle = '#0b1d0b'; ctx.fillRect(0, 0, canvas.width, canvas.height); 
             for (let i = 0; i < 50; i++) { 
@@ -520,12 +534,27 @@
             ctx.fillStyle = '#f1c40f'; ctx.font = 'bold 14px Courier New'; ctx.textAlign = 'center'; 
             ctx.fillText('🇧🇷 CAMPEÕES DO MUNDO 2026 🏆', canvas.width / 2, 35);
 
+            // Taça do Mundo Corrigida (Formato Clássico)
             let tX = canvas.width / 2;
             let tY = 150;
-            ctx.fillStyle = '#f1c40f'; ctx.fillRect(tX - 8, tY - 15, 16, 25);
-            ctx.beginPath(); ctx.arc(tX, tY - 15, 10, Math.PI, 0, false); ctx.fill();
-            ctx.fillStyle = '#d4af37'; ctx.fillRect(tX - 3, tY + 10, 6, 12); ctx.fillRect(tX - 10, tY + 22, 20, 6);
+            // Base da taça (Malaquita verde tradicional + base dourada)
+            ctx.fillStyle = '#145a32'; ctx.fillRect(tX - 12, tY + 16, 24, 8);
+            ctx.fillStyle = '#d4af37'; ctx.fillRect(tX - 8, tY + 10, 16, 6);
+            // Haste
+            ctx.fillRect(tX - 3, tY, 6, 10);
+            // Corpo da taça (copo superior)
+            ctx.beginPath();
+            ctx.moveTo(tX - 12, tY - 14);
+            ctx.lineTo(tX + 12, tY - 14);
+            ctx.lineTo(tX + 7, tY);
+            ctx.lineTo(tX - 7, tY);
+            ctx.closePath();
+            ctx.fillStyle = '#f1c40f'; ctx.fill();
+            // Globo/topo da taça
+            ctx.beginPath(); ctx.arc(tX, tY - 16, 9, 0, Math.PI * 2); 
+            ctx.fillStyle = '#f1c40f'; ctx.fill();
 
+            // Os 6 Lendários comemorando
             const legends = [
                 { name: "AQUILES", x: tX - 120, y: 220, shirt: "#f1c40f", hair: "#b83a14", skin: "#f5d0b1" },
                 { name: "ENDRICK", x: tX - 70, y: 250, shirt: "#f1c40f", hair: "#2c2c2c", skin: "#8d5524" },
@@ -552,10 +581,22 @@
             });
 
             ctx.fillStyle = '#ffffff'; ctx.font = '10px Courier New';
-            ctx.fillText('Toque em MENU PRINCIPAL para jogar novamente', canvas.width / 2, canvas.height - 20);
+            ctx.fillText('Toque em qualquer lugar para continuar!', canvas.width / 2, canvas.height - 20);
         }
 
-        function handleInput(clientX, clientY) { if (isAnimating || isChampionCelebration || turn !== 'player_shoot' || !menuScreen.classList.contains('hidden') || !stageScreen.classList.contains('hidden') || !resultsScreen.classList.contains('hidden') || !endScreen.classList.contains('hidden')) return; const rect = canvas.getBoundingClientRect(); const scaleX = canvas.width / rect.width; const scaleY = canvas.height / rect.height; let destX = Math.max(goalBox.x + 15, Math.min((clientX - rect.left) * scaleX, goalBox.x + goalBox.width - 15)); let destY = Math.max(goalBox.y + 10, Math.min((clientY - rect.top) * scaleY, goalBox.y + goalBox.height - 10)); executePlayerShot(destX, destY); }
+        function handleInput(clientX, clientY) { 
+            if (isChampionCelebration) {
+                isChampionCelebration = false;
+                showEndScreen(true);
+                return;
+            }
+            if (isAnimating || turn !== 'player_shoot' || !menuScreen.classList.contains('hidden') || !stageScreen.classList.contains('hidden') || !resultsScreen.classList.contains('hidden') || !endScreen.classList.contains('hidden')) return; 
+            const rect = canvas.getBoundingClientRect(); const scaleX = canvas.width / rect.width; const scaleY = canvas.height / rect.height; 
+            let destX = Math.max(goalBox.x + 15, Math.min((clientX - rect.left) * scaleX, goalBox.x + goalBox.width - 15)); 
+            let destY = Math.max(goalBox.y + 10, Math.min((clientY - rect.top) * scaleY, goalBox.y + goalBox.height - 10)); 
+            executePlayerShot(destX, destY); 
+        }
+
         canvas.addEventListener('click', (e) => handleInput(e.clientX, e.clientY)); canvas.addEventListener('touchstart', (e) => handleInput(e.touches[0].clientX, e.touches[0].clientY), { passive: false });
         function executePlayerShot(destX, destY) { isAnimating = true; isKicking = true; ballStart = { x: ballPos.x, y: ballPos.y }; ballTarget = { x: destX, y: destY }; ballAnimProgress = 0; setTimeout(() => { isKicking = false; }, 200); }
         drawField();
