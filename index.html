@@ -412,18 +412,8 @@
         }
 
         function evaluateAiShot(ballX, currentBrazilKeeperX) {
-            let isSave = Math.abs(ballX - currentBrazilKeeperX) < 48;
-            if (isSave) { 
-                // Trava o goleiro no lugar e segura a bola nele
-                brazilKeeperX = currentBrazilKeeperX; 
-                ballPos.x = brazilKeeperX;
-                ballPos.y = goalBox.y + 30; 
-                playCrowdCheer(); 
-                showBanner(`Defesa do Aquiles! 🇧🇷🧤`, "#f1c40f"); 
-            } else { 
-                opponentGoals++; 
-                showBanner(`GOL DE ${currentOpponent.player.name.toUpperCase()}! ⚽`, "#e74c3c"); 
-            }
+            if (Math.abs(ballX - currentBrazilKeeperX) < 48) { playCrowdCheer(); showBanner(`Defesa do Aquiles! 🇧🇷🧤`, "#f1c40f"); } 
+            else { opponentGoals++; showBanner(`GOL DE ${currentOpponent.player.name.toUpperCase()}! ⚽`, "#e74c3c"); }
             updateMatchHeader();
             setTimeout(() => {
                 messageBanner.style.display = 'none'; ballPos = { x: 210, y: 350 }; ballAnimProgress = 0;
@@ -533,7 +523,7 @@
 
         function drawBall(x, y) { ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.beginPath(); ctx.ellipse(x, y + 8, 6, 3, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 1.5; ctx.stroke(); }
         
-        // --- CENA DE CAMPEÃO COM OS 6 CRAQUES E TAÇA TRADICIONAL ---
+        // --- CENA DE CAMPEÃO COM OS 6 CRAQUES E TAÇA CORRIGIDA ---
         function drawChampionScene() { 
             ctx.fillStyle = '#0b1d0b'; ctx.fillRect(0, 0, canvas.width, canvas.height); 
             for (let i = 0; i < 50; i++) { 
@@ -544,11 +534,15 @@
             ctx.fillStyle = '#f1c40f'; ctx.font = 'bold 14px Courier New'; ctx.textAlign = 'center'; 
             ctx.fillText('🇧🇷 CAMPEÕES DO MUNDO 2026 🏆', canvas.width / 2, 35);
 
+            // Taça do Mundo Corrigida (Formato Clássico)
             let tX = canvas.width / 2;
             let tY = 150;
+            // Base da taça (Malaquita verde tradicional + base dourada)
             ctx.fillStyle = '#145a32'; ctx.fillRect(tX - 12, tY + 16, 24, 8);
             ctx.fillStyle = '#d4af37'; ctx.fillRect(tX - 8, tY + 10, 16, 6);
+            // Haste
             ctx.fillRect(tX - 3, tY, 6, 10);
+            // Corpo da taça (copo superior)
             ctx.beginPath();
             ctx.moveTo(tX - 12, tY - 14);
             ctx.lineTo(tX + 12, tY - 14);
@@ -556,9 +550,11 @@
             ctx.lineTo(tX - 7, tY);
             ctx.closePath();
             ctx.fillStyle = '#f1c40f'; ctx.fill();
+            // Globo/topo da taça
             ctx.beginPath(); ctx.arc(tX, tY - 16, 9, 0, Math.PI * 2); 
             ctx.fillStyle = '#f1c40f'; ctx.fill();
 
+            // Os 6 Lendários comemorando
             const legends = [
                 { name: "AQUILES", x: tX - 120, y: 220, shirt: "#f1c40f", hair: "#b83a14", skin: "#f5d0b1" },
                 { name: "ENDRICK", x: tX - 70, y: 250, shirt: "#f1c40f", hair: "#2c2c2c", skin: "#8d5524" },
