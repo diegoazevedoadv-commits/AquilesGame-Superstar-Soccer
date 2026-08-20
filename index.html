@@ -431,7 +431,7 @@
                 ballAnimProgress = 0; 
                 turn = 'ai_shoot'; 
                 keeperCanMove = true;
-                evaluationDone = false; // Reset limpo para a vez da IA
+                evaluationDone = false; 
                 updateMatchHeader(); 
                 setTimeout(executeAiShotSequence, 1000); 
             }, 1200);
@@ -454,7 +454,7 @@
                 messageBanner.style.display = 'none'; 
                 ballPos = { x: 210, y: 350 }; 
                 ballAnimProgress = 0;
-                evaluationDone = false; // Reset limpo para a próxima rodada
+                evaluationDone = false; 
                 if (currentKick <= 5) { 
                     if (Math.abs(brazilGoals - opponentGoals) > (5 - currentKick)) {
                         checkMatchOver(); 
@@ -514,7 +514,10 @@
             document.getElementById('end-message').innerText = isChampion ? `Aquiles levantou a Taça!` : `Brasil eliminado por ${currentOpponent.name}.`; 
         }
         function showBanner(text, color) { messageBanner.innerText = text; messageBanner.style.color = color; messageBanner.style.display = 'block'; }
-        function shareOnWhatsApp() { let text = `⚽ *AQUILES SUPERSTAR SOCCER 2026* 🇧🇷\nSou craque e levei a Seleção do Aquiles ao título!\nhttps://comfy-sunburst-37e602.netlify.app`; window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank'); }
+        function shareOnWhatsApp() { 
+            let text = `⚽ *AQUILES SUPERSTAR SOCCER 2026* 🇧🇷\nSou craque e levei a Seleção do Aquiles ao título!\nhttps://github.com/diegoazevedoadv-commits/AquilesGame-Superstar-Soccer/blob/main/index.html`; 
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank'); 
+        }
         function returnToMenu() { 
             startMenuMusic(); 
             if (championTimer) clearTimeout(championTimer);
@@ -648,7 +651,12 @@
             executePlayerShot(destX, destY); 
         }
 
-        canvas.addEventListener('click', (e) => handleInput(e.clientX, e.clientY)); canvas.addEventListener('touchstart', (e) => handleInput(e.touches[0].clientX, e.touches[0].clientY), { passive: false });
+        canvas.addEventListener('click', (e) => handleInput(e.clientX, e.clientY)); 
+        canvas.addEventListener('touchstart', (e) => { 
+            e.preventDefault(); 
+            handleInput(e.touches[0].clientX, e.touches[0].clientY); 
+        }, { passive: false });
+
         function executePlayerShot(destX, destY) { isAnimating = true; evaluationDone = false; keeperCanMove = true; isKicking = true; ballStart = { x: ballPos.x, y: ballPos.y }; ballTarget = { x: destX, y: destY }; ballAnimProgress = 0; setTimeout(() => { isKicking = false; }, 200); }
         drawField();
     </script>
