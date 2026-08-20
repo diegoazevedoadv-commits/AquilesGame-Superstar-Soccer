@@ -332,7 +332,7 @@
         let isAnimating = false; let gameActive = false; let isChampionCelebration = false;
         let keeperCanMove = true;
         let canShoot = true; 
-        let evaluationDone = false; // Trava contra dupla contagem no placar
+        let evaluationDone = false; 
         let animFrameId = null;
         let championTimer = null;
 
@@ -397,7 +397,7 @@
                         ballPos.x = ballStart.x + (ballTarget.x - ballStart.x) * ballAnimProgress; 
                         ballPos.y = ballStart.y + (ballTarget.y - ballStart.y) * ballAnimProgress; 
                         if (ballPos.y <= goalBox.y + 25) { 
-                            if (evaluationDone) return; // Garante que o lance só avalia uma vez
+                            if (evaluationDone) return; 
                             evaluationDone = true;
                             isAnimating = false; 
                             keeperCanMove = false; 
@@ -431,6 +431,7 @@
                 ballAnimProgress = 0; 
                 turn = 'ai_shoot'; 
                 keeperCanMove = true;
+                evaluationDone = false; // Reset limpo para a vez da IA
                 updateMatchHeader(); 
                 setTimeout(executeAiShotSequence, 1000); 
             }, 1200);
@@ -453,6 +454,7 @@
                 messageBanner.style.display = 'none'; 
                 ballPos = { x: 210, y: 350 }; 
                 ballAnimProgress = 0;
+                evaluationDone = false; // Reset limpo para a próxima rodada
                 if (currentKick <= 5) { 
                     if (Math.abs(brazilGoals - opponentGoals) > (5 - currentKick)) {
                         checkMatchOver(); 
